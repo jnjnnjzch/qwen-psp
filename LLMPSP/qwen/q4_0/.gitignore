@@ -1,0 +1,10 @@
+/.work/
+/build/
+/model.fhq4
+/model.fhq4.json
+*.o
+*.elf
+*.prx
+*.sfo
+*.SFO
+*.PBP

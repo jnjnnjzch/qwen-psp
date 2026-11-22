@@ -1,0 +1,88 @@
+{
+  "psp_model": "PSP-1000",
+  "physical_ram_mib": 32,
+  "runs": [
+    {
+      "prompt": "What is 2+2?",
+      "answer": "2 + 2 equals 4.",
+      "token_ids": [
+        17,
+        488,
+        220,
+        17,
+        16819,
+        220,
+        19,
+        13
+      ],
+      "cache_mib": 0,
+      "memory": {
+        "model_bytes": 3131344,
+        "runtime_bytes": 8272192,
+        "cache_bytes": 0,
+        "resident_bytes": 11403536
+      },
+      "attention": {
+        "head_dim": 128,
+        "forward_checks": 26,
+        "score_max_abs": 4.76837158e-06,
+        "output_max_abs": 0.0
+      },
+      "log": "build/psp-0-cache0.log"
+    },
+    {
+      "prompt": "你好，请用中文回答：1加1等于多少？",
+      "answer": "1加1等于2。",
+      "token_ids": [
+        16,
+        20929,
+        16,
+        107106,
+        17,
+        1773
+      ],
+      "cache_mib": 6,
+      "memory": {
+        "model_bytes": 9422800,
+        "runtime_bytes": 8272192,
+        "cache_bytes": 6291456,
+        "resident_bytes": 17694992
+      },
+      "attention": {
+        "head_dim": 128,
+        "forward_checks": 30,
+        "score_max_abs": 5.7220459e-06,
+        "output_max_abs": 0.0
+      },
+      "log": "build/psp-1-cache6.log"
+    },
+    {
+      "prompt": "What is 2+2?",
+      "answer": "2 + 2 equals 4.",
+      "token_ids": [
+        17,
+        488,
+        220,
+        17,
+        16819,
+        220,
+        19,
+        13
+      ],
+      "cache_mib": 6,
+      "memory": {
+        "model_bytes": 9422800,
+        "runtime_bytes": 8272192,
+        "cache_bytes": 6291456,
+        "resident_bytes": 17694992
+      },
+      "attention": {
+        "head_dim": 128,
+        "forward_checks": 26,
+        "score_max_abs": 4.76837158e-06,
+        "output_max_abs": 0.0
+      },
+      "log": "build/psp-0-cache6.log"
+    }
+  ]
+}

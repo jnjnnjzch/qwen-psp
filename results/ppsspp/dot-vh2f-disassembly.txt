@@ -1,0 +1,107 @@
+
+build/psp/objects/dot_vh2f.o:     file format elf32-littlemips
+
+
+Disassembly of section .text:
+
+00000000 <bench_dot_q4_vh2f>:
+   0:	27bdfff0 	addiu	sp,sp,-16
+   4:	3c020000 	lui	v0,0x0
+   8:	afb0000c 	sw	s0,12(sp)
+   c:	24500000 	addiu	s0,v0,0
+  10:	d0068080 	vzero.q	C000.q
+  14:	d0060001 	vzero.s	S010.s
+  18:	3c180f0f 	lui	t8,0xf0f
+  1c:	37180f0f 	ori	t8,t8,0xf0f
+  20:	88880005 	lwl	t0,5(a0)
+  24:	98880002 	lwr	t0,2(a0)
+  28:	88890009 	lwl	t1,9(a0)
+  2c:	98890006 	lwr	t1,6(a0)
+  30:	888a000d 	lwl	t2,13(a0)
+  34:	988a000a 	lwr	t2,10(a0)
+  38:	888b0011 	lwl	t3,17(a0)
+  3c:	988b000e 	lwr	t3,14(a0)
+  40:	01186024 	and	t4,t0,t8
+  44:	00084102 	srl	t0,t0,0x4
+  48:	01184024 	and	t0,t0,t8
+  4c:	01386824 	and	t5,t1,t8
+  50:	00094902 	srl	t1,t1,0x4
+  54:	01384824 	and	t1,t1,t8
+  58:	01587024 	and	t6,t2,t8
+  5c:	000a5102 	srl	t2,t2,0x4
+  60:	01585024 	and	t2,t2,t8
+  64:	01787824 	and	t7,t3,t8
+  68:	000b5902 	srl	t3,t3,0x4
+  6c:	01785824 	and	t3,t3,t8
+  70:	ae0c0000 	sw	t4,0(s0)
+  74:	ae0d0004 	sw	t5,4(s0)
+  78:	ae0e0008 	sw	t6,8(s0)
+  7c:	ae0f000c 	sw	t7,12(s0)
+  80:	ae080010 	sw	t0,16(s0)
+  84:	ae090014 	sw	t1,20(s0)
+  88:	ae0a0018 	sw	t2,24(s0)
+  8c:	ae0b001c 	sw	t3,28(s0)
+  90:	94990000 	lhu	t9,0(a0)
+  94:	48f90003 	mtv	t9,S030.s
+  98:	d0330302 	vh2f.s	C020.p,S030.s
+  9c:	c8e30001 	lv.s	S031.s,0(a3)
+  a0:	da040000 	lv.q	C100.q,0(s0)
+  a4:	da050010 	lv.q	C110.q,16(s0)
+  a8:	d0390408 	vc2i.s	C200.q,S100.s
+  ac:	d0392409 	vc2i.s	C210.q,S101.s
+  b0:	d039440a 	vc2i.s	C220.q,S102.s
+  b4:	d039640b 	vc2i.s	C230.q,S103.s
+  b8:	d039050c 	vc2i.s	C300.q,S110.s
+  bc:	d039250d 	vc2i.s	C310.q,S111.s
+  c0:	d039450e 	vc2i.s	C320.q,S112.s
+  c4:	d039650f 	vc2i.s	C330.q,S113.s
+  c8:	d2988888 	vi2f.q	C200.q,C200.q,24
+  cc:	d2988989 	vi2f.q	C210.q,C210.q,24
+  d0:	d2988a8a 	vi2f.q	C220.q,C220.q,24
+  d4:	d2988b8b 	vi2f.q	C230.q,C230.q,24
+  d8:	d2988c8c 	vi2f.q	C300.q,C300.q,24
+  dc:	d2988d8d 	vi2f.q	C310.q,C310.q,24
+  e0:	d2988e8e 	vi2f.q	C320.q,C320.q,24
+  e4:	d2988f8f 	vi2f.q	C330.q,C330.q,24
+  e8:	d8b00000 	lv.q	C400.q,0(a1)
+  ec:	d8b10010 	lv.q	C410.q,16(a1)
+  f0:	d8b20020 	lv.q	C420.q,32(a1)
+  f4:	d8b30030 	lv.q	C430.q,48(a1)
+  f8:	d8b40040 	lv.q	C500.q,64(a1)
+  fc:	d8b50050 	lv.q	C510.q,80(a1)
+ 100:	d8b60060 	lv.q	C520.q,96(a1)
+ 104:	d8b70070 	lv.q	C530.q,112(a1)
+ 108:	64108898 	vmul.q	C600.q,C200.q,C400.q
+ 10c:	64118999 	vmul.q	C610.q,C210.q,C410.q
+ 110:	64128a9a 	vmul.q	C620.q,C220.q,C420.q
+ 114:	64138b9b 	vmul.q	C630.q,C230.q,C430.q
+ 118:	64148c9c 	vmul.q	C700.q,C300.q,C500.q
+ 11c:	64158d9d 	vmul.q	C710.q,C310.q,C510.q
+ 120:	64168e9e 	vmul.q	C720.q,C320.q,C520.q
+ 124:	64178f9f 	vmul.q	C730.q,C330.q,C530.q
+ 128:	60199898 	vadd.q	C600.q,C600.q,C610.q
+ 12c:	601b9a9a 	vadd.q	C620.q,C620.q,C630.q
+ 130:	601d9c9c 	vadd.q	C700.q,C700.q,C710.q
+ 134:	601f9e9e 	vadd.q	C720.q,C720.q,C730.q
+ 138:	601a9898 	vadd.q	C600.q,C600.q,C620.q
+ 13c:	601e9c9c 	vadd.q	C700.q,C700.q,C720.q
+ 140:	601c9898 	vadd.q	C600.q,C600.q,C700.q
+ 144:	65029898 	vscl.q	C600.q,C600.q,S020.s
+ 148:	60188080 	vadd.q	C000.q,C000.q,C600.q
+ 14c:	64230243 	vmul.s	S032.s,S020.s,S031.s
+ 150:	60430101 	vadd.s	S010.s,S010.s,S032.s
+ 154:	24840012 	addiu	a0,a0,18
+ 158:	24a50080 	addiu	a1,a1,128
+ 15c:	24e70004 	addiu	a3,a3,4
+ 160:	24c6ffff 	addiu	a2,a2,-1
+ 164:	14c0ffae 	bnez	a2,20 <bench_dot_q4_vh2f+0x20>
+ 168:	00000000 	nop
+ 16c:	d0468082 	vfad.q	S020.s,C000.q
+ 170:	dfa24800 	vfim.s	S021.s,8
+ 174:	64220142 	vmul.s	S022.s,S010.s,S021.s
+ 178:	60c20202 	vsub.s	S020.s,S020.s,S022.s
+ 17c:	eba20000 	sv.s	S020.s,0(sp)
+ 180:	c7a00000 	lwc1	$f0,0(sp)
+ 184:	8fb0000c 	lw	s0,12(sp)
+ 188:	03e00008 	jr	ra
+ 18c:	27bd0010 	addiu	sp,sp,16

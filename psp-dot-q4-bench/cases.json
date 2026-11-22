@@ -1,0 +1,23 @@
+[
+  {"name": "GEMM / Q4x16 K32", "component": 0, "rows": 16, "columns": 32, "batch": 4},
+  {"name": "GEMV / Q16 K128", "component": 0, "rows": 16, "columns": 128, "batch": 1},
+  {"name": "GEMM / Q4x32 K128", "component": 0, "rows": 32, "columns": 128, "batch": 4},
+  {"name": "GEMM / Q8x64 K256", "component": 0, "rows": 64, "columns": 256, "batch": 8},
+  {"name": "GEMV / DOWN16 K256", "component": 1, "rows": 16, "columns": 256, "batch": 1},
+  {"name": "GEMM / DOWN4x32 K256", "component": 1, "rows": 32, "columns": 256, "batch": 4},
+  {"name": "SLICE / Q3x7 K96", "component": 0, "rows": 7, "columns": 96, "batch": 3, "row_start": 5, "column_start": 32},
+  {"name": "SLICE / DOWN2x5 K160", "component": 1, "rows": 5, "columns": 160, "batch": 2, "row_start": 11, "column_start": 128},
+  {"name": "DOT / K32", "component": 0, "rows": 1, "columns": 32, "batch": 1},
+  {"name": "DOT / K128", "component": 0, "rows": 1, "columns": 128, "batch": 1},
+  {"name": "DOT / K512", "component": 0, "rows": 1, "columns": 512, "batch": 1},
+  {"name": "DOT / K1024", "component": 0, "rows": 1, "columns": 1024, "batch": 1},
+  {"name": "DOT / K3072", "component": 1, "rows": 1, "columns": 3072, "batch": 1},
+  {"name": "GEMV / Q128", "component": 0, "rows": 128, "columns": 1024, "batch": 1, "full": true},
+  {"name": "GEMV / Q512", "component": 0, "rows": 512, "columns": 1024, "batch": 1, "full": true},
+  {"name": "GEMV / Q2048", "component": 0, "rows": 2048, "columns": 1024, "batch": 1, "full": true},
+  {"name": "GEMV / DOWN1024", "component": 1, "rows": 1024, "columns": 3072, "batch": 1, "full": true},
+  {"name": "GEMM / Q512 B4", "component": 0, "rows": 512, "columns": 1024, "batch": 4, "full": true},
+  {"name": "GEMM / Q2048 B16", "component": 0, "rows": 2048, "columns": 1024, "batch": 16, "full": true},
+  {"name": "GEMM / DOWN1024 B4", "component": 1, "rows": 1024, "columns": 3072, "batch": 4, "full": true},
+  {"name": "GEMM / DOWN1024 B16", "component": 1, "rows": 1024, "columns": 3072, "batch": 16, "full": true}
+]

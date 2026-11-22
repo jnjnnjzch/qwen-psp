@@ -9,9 +9,9 @@ from gguf import GGMLQuantizationType, dequantize
 from transformers import AutoTokenizer, Qwen3Config, Qwen3ForCausalLM
 from transformers.cache_utils import DynamicCache
 
-HERE = Path(__file__).resolve().parent
-MODEL = HERE / "model.fhq4"
-BUILD = HERE / "build"
+ROOT = Path(__file__).resolve().parents[1]
+MODEL = ROOT / "model.fhq4"
+BUILD = ROOT / "build"
 
 
 def probe(mode, text, *extra):
@@ -84,7 +84,7 @@ def reference_model(manifest):
 
 def run(reference):
     BUILD.mkdir(exist_ok=True)
-    tokenizer = AutoTokenizer.from_pretrained(HERE / ".work", local_files_only=True)
+    tokenizer = AutoTokenizer.from_pretrained(ROOT / ".work", local_files_only=True)
     report = {"tokenizer": [], "generation": []}
     texts = (
         "Hello world", "What is 2+2?", "你好，请用中文介绍一下自己。",

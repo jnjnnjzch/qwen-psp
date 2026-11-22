@@ -3,13 +3,52 @@ import hashlib
 import json
 from pathlib import Path
 import struct
-import sys
 
+import numpy as np
 from gguf import GGUFReader, GGMLQuantizationType, dequantize
 
-HERE = Path(__file__).resolve().parent
-sys.path.insert(0, str(HERE.parents[1] / "tools"))
-from convert_falcon_h1 import align_file, bytes_to_unicode, q4_0_bytes
+ROOT = Path(__file__).resolve().parents[1]
+QK = 32
+
+
+def q4_0_bytes(values: np.ndarray) -> bytes:
+    matrix = np.asarray(values, dtype=np.float32)
+    if matrix.ndim != 2 or matrix.shape[1] % QK:
+        raise ValueError(f"Q4 shape must be [rows, cols divisible by {QK}], got {matrix.shape}")
+    rows, cols = matrix.shape
+    blocks = np.ascontiguousarray(matrix).reshape(rows, cols // QK, QK)
+    maxima = np.argmax(np.abs(blocks), axis=2)
+    signed_max = np.take_along_axis(blocks, maxima[..., None], axis=2)[..., 0]
+    scales = signed_max / -8.0
+    inverse = np.zeros_like(scales)
+    np.divide(1.0, scales, out=inverse, where=scales != 0.0)
+    quants = np.trunc(blocks * inverse[..., None] + 8.5).astype(np.int16)
+    quants = np.clip(quants, 0, 15).astype(np.uint8)
+    packed = quants[..., :16] | (quants[..., 16:] << 4)
+    output = np.empty((rows, cols // QK, 18), dtype=np.uint8)
+    output[..., :2] = scales.astype("<f2").view(np.uint8).reshape(rows, cols // QK, 2)
+    output[..., 2:] = packed
+    return output.tobytes()
+
+
+def bytes_to_unicode() -> dict[int, str]:
+    byte_values = list(range(ord("!"), ord("~") + 1))
+    byte_values += list(range(ord("¡"), ord("¬") + 1))
+    byte_values += list(range(ord("®"), ord("ÿ") + 1))
+    unicode_values = list(byte_values)
+    extra = 0
+    for value in range(256):
+        if value not in byte_values:
+            byte_values.append(value)
+            unicode_values.append(256 + extra)
+            extra += 1
+    return dict(zip(byte_values, map(chr, unicode_values)))
+
+
+def align_file(file, alignment: int = 64) -> None:
+    padding = (-file.tell()) % alignment
+    if padding:
+        file.write(b"\0" * padding)
 
 
 def tokenizer_section(reader):
@@ -145,9 +184,8 @@ def convert(source, destination, context):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument("--source", type=Path,
-                        default=HERE.parent / "models/qwen3-0.6b/Qwen3-0.6B-Q4_0.gguf")
-    parser.add_argument("--output", type=Path, default=HERE / "model.fhq4")
+    parser.add_argument("--source", type=Path, default=ROOT / ".work/Qwen3-0.6B-Q4_0.gguf")
+    parser.add_argument("--output", type=Path, default=ROOT / "model.fhq4")
     parser.add_argument("--context", type=int, default=128)
     args = parser.parse_args()
     convert(args.source, args.output, args.context)

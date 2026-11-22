@@ -5,13 +5,14 @@ from pathlib import Path
 import re
 import subprocess
 
-HERE = Path(__file__).resolve().parent
-BUILD = HERE / "build"
+ROOT = Path(__file__).resolve().parents[1]
+BUILD = ROOT / "build"
 
 
 def run(emulator):
     config = configparser.ConfigParser()
-    config.read(HERE / "psp1000.ini")
+    config_path = ROOT / "tests/psp1000.ini"
+    config.read(config_path)
     if config.getint("SystemParam", "PSPModel") != 0:
         raise ValueError("PSP-1000 configuration required")
     host = json.loads((BUILD / "host-verification.json").read_text(encoding="utf-8"))
@@ -23,7 +24,7 @@ def run(emulator):
         (game / "qwen_test.txt").write_text(settings, encoding="utf-8")
         log_path = BUILD / f"psp-{index}-cache{cache_mb}.log"
         command = [str(emulator), str(game / "EBOOT.PBP"),
-                   "--appendconfig=" + str(HERE / "psp1000.ini"),
+                   "--appendconfig=" + str(config_path),
                    "--memstick=" + str(BUILD / "memstick"),
                    "--root=" + str(game), "--timeout-wall=1800"]
         with log_path.open("wb") as log:
@@ -43,7 +44,7 @@ def run(emulator):
         report["runs"].append({"prompt": expected["prompt"], "cache_mib": cache_mb,
                                 "answer": expected["answer"], "token_ids": ids,
                                 "memory": memory, "elapsed_emulated_us": int(elapsed.group(1)),
-                                "log": str(log_path.relative_to(HERE))})
+                                "log": str(log_path.relative_to(ROOT))})
         print(f"PSP-1000 cache={cache_mb}: PASS {expected['answer']!r}, "
               f"resident={memory['resident_bytes'] / 1048576:.2f} MiB", flush=True)
     (BUILD / "psp-verification.json").write_text(
@@ -53,5 +54,5 @@ def run(emulator):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("--emulator", type=Path,
-                        default=HERE / ".work/ppsspp-build/PPSSPPHeadless")
+                        default=ROOT / ".work/ppsspp-build/PPSSPPHeadless")
     run(parser.parse_args().emulator.resolve())

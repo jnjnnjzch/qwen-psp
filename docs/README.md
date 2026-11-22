@@ -1,10 +1,10 @@
 # 从 Hello world 开始
 
-在这个目录执行：
+按构建说明准备模型，在仓库根目录执行以下命令。 [构建说明](../README.md)
 
 ```bash
-make -j4
-./build/tokenizer_demo models/qwen3-0.6b-q4_0.fhq4 "Hello world"
+make -j4 host
+./build/tokenizer_demo model.fhq4 "Hello world"
 ```
 
 程序会读取正在使用的 Qwen3 词表，显示每一步合并。最后两行是：
@@ -24,11 +24,11 @@ make -j4
 | 顺序 | 阅读或运行的内容                                     | 这一步需要弄清楚的事情                             |
 | ---- | ---------------------------------------------------- | -------------------------------------------------- |
 | 1    | 本页的实际演示                                       | 文本如何变成编号，编号如何还原成文本               |
-| 2    | [C 符号入门](docs/00-c-basics.md)                     | `->`、`*`、`&`、数组和函数参数分别表示什么   |
-| 3    | [tokenizer 与 BPE](docs/01-tokenizer.md)              | 预分词、字节条目、合并优先级和停止条件             |
-| 4    | [Qwen 如何搭积木](docs/02-model.md)                   | 一个 DecoderLayer 如何组合，整个模型如何循环 28 层 |
+| 2    | [C 符号入门](00-c-basics.md)                          | `->`、`*`、`&`、数组和函数参数分别表示什么   |
+| 3    | [tokenizer 与 BPE](01-tokenizer.md)                   | 预分词、字节条目、合并优先级和停止条件             |
+| 4    | [Qwen 如何搭积木](02-model.md)                        | 一个 DecoderLayer 如何组合，整个模型如何循环 28 层 |
 | 5    | `src/layers/mlp.c`、`src/layers/decoder_layer.c` | 按几次函数调用读完一个组件                         |
-| 6    | [权重、算子和内存](docs/03-runtime.md)                | 矩阵乘法怎样读取权重，32 MB 的设备怎样保存中间结果 |
+| 6    | [权重、算子和内存](03-runtime.md)                     | 矩阵乘法怎样读取权重，32 MB 的设备怎样保存中间结果 |
 
 学习 tokenizer 时，沿着 `src/tokenizer/tokenizer.c` 中的
 `tokenizer_encode_with_trace()` 阅读。它调用 `bpe_encode_segment()` 处理一段普通文本。
@@ -49,7 +49,7 @@ make -j4
 再执行一次中文演示：
 
 ```bash
-./build/tokenizer_demo models/qwen3-0.6b-q4_0.fhq4 "你好"
+./build/tokenizer_demo model.fhq4 "你好"
 ```
 
 你会看到 6 个字节条目经过多次合并，得到编号 `108386`。这个例子中的一个 token
@@ -58,28 +58,26 @@ make -j4
 ## 运行完整模型
 
 ```bash
-./build/qwen_cli models/qwen3-0.6b-q4_0.fhq4 "What is 2+2?" 8 6
+./build/qwen_cli model.fhq4 "What is 2+2?" 8 6
 ```
 
 参数依次是模型文件、用户文本、最多生成的 token 数、权重缓存 MiB。
-程序的执行顺序写在 `app/main.c`：加载模型、编码聊天提示、生成、释放资源。
-这里使用先前下载并转换的真实模型，模型文件通过 `models/` 中的链接共享。
+`tools/qwen_cli.c` 负责加载模型、编码聊天提示、生成和释放资源。
 
 ## 文件之间如何合作
 
 `.h` 文件列出结构体和函数声明，`.c` 文件编写函数体。
-`sources.mk` 列出所有实现文件；构建工具逐个编译，再将目标文件链接为程序。
+`tools/sources.mk` 列出推理实现文件。构建工具逐个编译，再将目标文件链接为程序。
 
 | 目录               | 阅读时把它理解为什么                                   |
 | ------------------ | ------------------------------------------------------ |
-| `app/`           | 应用入口和分词演示                                     |
+| `tools/`         | 电脑端入口、分词演示和模型转换                         |
 | `src/model/`     | 组合完整 Qwen3 模型                                    |
 | `src/layers/`    | Embedding、Linear、Attention、MLP、DecoderLayer 等组件 |
 | `src/ops/`       | 组件内部调用的数学运算与 PSP VFPU 实现                 |
 | `src/tokenizer/` | 文本与 token 编号之间的转换                            |
 | `src/storage/`   | 加载参数、读取文件、管理权重缓存                       |
 | `src/runtime/`   | 管理临时数组、采样和多次 forward 的生成循环            |
-| `compat/`        | 连接原项目 PSP 界面的函数接口                          |
-| `tests/`         | 真实模型验证，包含与原实现逐层比较和 PSP-1000 运行     |
+| `tests/`         | 使用官方模型核验输出，并运行 PSP-1000 模拟验证         |
 
-寻找具体文件时，查看[文件职责](docs/04-files.md)。构建和验证命令在 [README.md](README.md)。
+各个实现文件的职责见索引。 [文件职责](04-files.md)

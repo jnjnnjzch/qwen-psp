@@ -9,9 +9,9 @@ from gguf import GGMLQuantizationType, dequantize
 from transformers import AutoTokenizer, Qwen3Config, Qwen3ForCausalLM
 from transformers.cache_utils import DynamicCache
 
-HERE = Path(__file__).resolve().parent
-MODEL = HERE / "model.fhq4"
-BUILD = HERE / "build"
+ROOT = Path(__file__).resolve().parents[1]
+MODEL = ROOT / "model.fhq4"
+BUILD = ROOT / "build"
 
 
 def probe(mode, text, *extra):
@@ -21,10 +21,6 @@ def probe(mode, text, *extra):
 
 
 class Int8Cache(DynamicCache):
-    def __init__(self):
-        super().__init__()
-        self.inputs = []
-
     @staticmethod
     def quantized(values):
         scale = values.abs().amax(dim=-1, keepdim=True) / 127
@@ -32,8 +28,6 @@ class Int8Cache(DynamicCache):
         return (values / scale).round().clamp(-127, 127) * scale
 
     def update(self, key_states, value_states, layer_idx, cache_kwargs=None):
-        self.inputs.append(np.stack([key_states.detach().numpy().reshape(8, 128),
-                                     value_states.detach().numpy().reshape(8, 128)]))
         return super().update(self.quantized(key_states), self.quantized(value_states),
                               layer_idx, cache_kwargs)
 
@@ -84,7 +78,7 @@ def reference_model(manifest):
 
 def run(reference):
     BUILD.mkdir(exist_ok=True)
-    tokenizer = AutoTokenizer.from_pretrained(HERE / ".work", local_files_only=True)
+    tokenizer = AutoTokenizer.from_pretrained(ROOT / ".work", local_files_only=True)
     report = {"tokenizer": [], "generation": []}
     texts = (
         "Hello world", "What is 2+2?", "你好，请用中文介绍一下自己。",
@@ -130,23 +124,6 @@ def run(reference):
         actual = np.fromfile(BUILD / "c-logits.f32", dtype="<f4")
         expected = logits.numpy()
         maximum = float(np.max(np.abs(actual - expected)))
-        c_kv = np.fromfile(BUILD / "c-logits.f32.kv", dtype="<f4").reshape(-1, 2, 8, 128)
-        reference_kv = np.array(cache.inputs)
-
-        def q8(values):
-            scale = np.max(np.abs(values), axis=-1, keepdims=True) / np.float32(127)
-            return np.rint(values / np.where(scale > 0, scale, 1)).astype(np.int8)
-
-        cache_difference = q8(c_kv) != q8(reference_kv)
-        changes = np.argwhere(cache_difference)
-        first_rounding = None
-        if len(changes):
-            step, kind, head, channel = map(int, changes[0])
-            first_rounding = {"position": step // 28, "layer": step % 28,
-                              "cache": "key" if kind == 0 else "value",
-                              "max_projection_error": float(np.max(np.abs(c_kv[step] - reference_kv[step]))),
-                              "different_int8_values": int(cache_difference[step].sum())}
-            print("First int8 rounding difference:", first_rounding, flush=True)
         c_trace = np.fromfile(BUILD / "c-logits.f32.layers", dtype="<f4").reshape(-1, 1024)
         errors = np.max(np.abs(c_trace - np.array(trace)), axis=1).reshape(len(ids), 29)
         cosine = float(np.dot(actual, expected) / np.linalg.norm(actual) / np.linalg.norm(expected))
@@ -161,7 +138,6 @@ def run(reference):
         report["reference"] = {"implementation": "transformers Qwen3ForCausalLM",
                                "max_abs_logit_error": maximum,
                                "cosine_similarity": cosine, "kl_divergence": kl,
-                               "first_int8_rounding_difference": first_rounding,
                                "layer_max_abs_errors": errors.tolist(),
                                "next_token": int(actual.argmax())}
         print(f"Hugging Face logits: PASS (max error {maximum:.7f})", flush=True)
@@ -200,6 +176,14 @@ def run(reference):
                 raise AssertionError(f"Hugging Face reply mismatch: {answer!r}")
             report["generation"][-1]["reference_ids"] = generated
             print("Hugging Face generated token sequence: PASS", flush=True)
+    result = subprocess.run([str(BUILD / "multiturn"), str(MODEL)],
+                            capture_output=True, text=True, check=True)
+    report["multiturn"] = result.stdout.strip()
+    print(report["multiturn"], flush=True)
+    demo = subprocess.check_output([str(BUILD / "tokenizer_demo"), str(MODEL), "Hello world"], text=True)
+    if "重新拼接 token 的字节：Hello world" not in demo:
+        raise AssertionError("tokenizer walkthrough decode mismatch")
+    (BUILD / "tokenizer-demo.txt").write_text(demo, encoding="utf-8")
     (BUILD / "host-verification.json").write_text(
         json.dumps(report, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
 

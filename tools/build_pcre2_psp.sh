@@ -1,6 +1,6 @@
 set -eu
 
-QWEN_DIR=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
+QWEN_DIR=$(CDPATH= cd -- "$(dirname -- "$0")/.." && pwd)
 export TMPDIR="$QWEN_DIR/.work/tmp"
 mkdir -p "$TMPDIR" "$QWEN_DIR/.work/pcre2-psp" "$QWEN_DIR/.work/psp-deps"
 cd "$QWEN_DIR/.work/pcre2-psp"

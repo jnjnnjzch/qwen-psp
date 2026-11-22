@@ -6,12 +6,13 @@ import subprocess
 
 ROOT = Path(__file__).resolve().parents[1]
 BUILD = ROOT / "build"
-EMULATOR = ROOT.parent / "LLMPSP/qwen/q4_0/.work/ppsspp-build/PPSSPPHeadless"
+EMULATOR = ROOT / ".work/ppsspp-build/PPSSPPHeadless"
 
 
 def main():
     config = configparser.ConfigParser()
-    config.read(ROOT / "psp1000.ini")
+    config_path = ROOT / "tests/psp1000.ini"
+    config.read(config_path)
     if config.getint("SystemParam", "PSPModel") != 0:
         raise ValueError("PSP-1000 configuration required")
     host = json.loads((BUILD / "host-verification.json").read_text(encoding="utf-8"))
@@ -23,7 +24,7 @@ def main():
             f"{cache_mib} {limit}\n{expected['prompt']}\n", encoding="utf-8")
         log_path = BUILD / f"psp-{index}-cache{cache_mib}.log"
         command = [str(EMULATOR), str(game / "EBOOT.PBP"),
-                   "--appendconfig=" + str(ROOT / "psp1000.ini"),
+                   "--appendconfig=" + str(config_path),
                    "--memstick=" + str(BUILD / "test-memstick"),
                    "--root=" + str(game), "--timeout-wall=1800"]
         with log_path.open("wb") as log:

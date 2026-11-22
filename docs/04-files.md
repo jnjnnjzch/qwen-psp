@@ -1,15 +1,15 @@
 # 查找文件
 
 学习模型结构时，从 `src/model/qwen3.c` 阅读到 `src/layers/decoder_layer.c` 和
-`src/layers/mlp.c`。学习分词时，从 `app/tokenizer_demo.c` 阅读到 `src/tokenizer/tokenizer.c`
+`src/layers/mlp.c`。学习分词时，从 `tools/tokenizer_demo.c` 阅读到 `src/tokenizer/tokenizer.c`
 和 `src/tokenizer/bpe.c`。其余文件可以在需要时查找。
 
 ## 应用入口与公开声明
 
 | 文件 | 职责 |
 | --- | --- |
-| `app/main.c` | 电脑端入口：打开模型、编码用户消息、生成回答、释放资源 |
-| `app/tokenizer_demo.c` | 打印分段、初始字节条目、每轮合并、最终编号和还原文本 |
+| `tools/qwen_cli.c` | 电脑端入口，负责打开模型、编码用户消息、生成回答和释放资源 |
+| `tools/tokenizer_demo.c` | 打印分段、初始字节条目、每轮合并、最终编号和还原文本 |
 | `include/qwen.h` | 应用需要引入的公开声明入口 |
 | `include/qwen_types.h` | 模型配置、常量、基础类型和回调类型 |
 | `include/qwen_layers.h` | Linear、Embedding、RMSNorm、Attention、MLP 和 DecoderLayer 的结构与接口 |
@@ -56,32 +56,32 @@
 
 | 文件 | 职责 |
 | --- | --- |
-| `compat/falcon_h1.h` | 向原 PSP 界面提供需要的类型与函数声明 |
-| `compat/falcon_frontend.c` | 将界面的函数调用交给对应 Qwen 接口 |
-| `sources.mk` | 本目录独立编译的核心 `.c` 文件列表 |
-| `Makefile` | 构建电脑端应用、分词演示和验证程序 |
+| `src/main_psp.c` | PSP 应用入口 |
+| `include/falcon_h1.h` | 向 PSP 界面提供需要的类型与函数声明 |
+| `src/falcon_frontend.c` | 将界面的函数调用交给对应 Qwen 接口 |
+| `tools/sources.mk` | 参与编译的核心 `.c` 文件列表 |
+| `Makefile` | 从仓库根目录构建和打包 |
 | `Makefile.psp` | 使用 PSPDEV 构建应用与自动运行测试 |
-| `build_psp.sh` | 构建两个 PSP 程序，准备安装目录和校验文件 |
+| `tools/build_pcre2_psp.sh` | 为 PSP 编译 PCRE2 静态库 |
 | `llmpsp_config.cfg` | PSP 默认配置，包含 6 MiB 权重缓存和 128 个上下文位置 |
-| `psp1000.ini` | PPSSPP 的 PSP-1000 配置 |
+| `tests/psp1000.ini` | PPSSPP 的 PSP-1000 配置 |
 | `tests/probe.c` | 输出 token 编号、聊天提示，以及逐层向量和完整词表分数 |
 | `tests/multiturn.c` | 用真实对话验证继续会话和完整重放一致 |
 | `tests/psp_autotest.c` | 在 PSP 上自动加载模型、生成，比较真实 Q/K/V 的 VFPU 与标量结果，报告 token 编号与内存 |
 | `tests/qwen_test.txt` | 自动运行程序的缓存、生成长度和真实提示配置 |
-| `tests/verify_host.py` | 与官方 tokenizer、参考输出和原实现的逐层数据进行比较 |
+| `tests/verify_host.py` | 与官方 tokenizer 和加载相同权重的 Transformers 模型比较输出 |
 | `tests/verify_psp.py` | 启动 PPSSPP，并比较 PSP 生成编号与电脑端参考结果 |
 | `.gitignore` | 排除构建产物、中间文件、共享模型和 Python 缓存 |
 | `LICENSE` | C 实现的 MIT 许可证 |
 
-`build/` 保存可执行文件和验证报告；`.work/tmp/` 用于构建中间文件。
-`models/` 中的链接指向相邻项目已有的模型和转换说明。
+`build/` 保存可执行文件和验证报告，`.work/` 保存下载和构建依赖。模型转换后放在仓库根目录的 `model.fhq4`。
 
 ## 学习文档
 
 | 文件 | 内容 |
 | --- | --- |
-| `START_HERE.md` | 实际演示与阅读顺序 |
-| `README.md` | 运行、构建、验证结果和资源来源 |
+| `docs/README.md` | 实际演示与阅读顺序 |
+| 根目录 `README.md` | 运行、构建、验证和资源来源 |
 | `docs/00-c-basics.md` | 指针、`->`、地址、数组和函数参数 |
 | `docs/01-tokenizer.md` | 预分词、BPE、真实合并过程和聊天模板 |
 | `docs/02-model.md` | PyTorch 构件对应关系、模型与 DecoderLayer 流程图 |

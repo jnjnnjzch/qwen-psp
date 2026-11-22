@@ -75,6 +75,6 @@ token 条目，然后按照词表已经给出的规则，反复合并相邻条�
 | 一段文本的 BPE 合并 | `bpe.c`：`bpe_encode_segment()` |
 | 按字节查词表、按编号查字节 | `vocabulary.c` |
 | 用户消息和 assistant 前缀 | `chat_template.c` |
-| 逐步演示的输出 | `app/tokenizer_demo.c`：`observe()` |
+| 逐步演示的输出 | `tools/tokenizer_demo.c` 中的 `observe()` |
 
 演示和模型生成调用同一份编码实现。观察函数在合并期间打印真实状态。

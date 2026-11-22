@@ -1,7 +1,5 @@
 set -eu
 
-cd /workspace/psp-dot-q4-bench
-export TMPDIR=/workspace/psp-dot-q4-bench/.work/tmp
 make -C build/psp -f ../../Makefile.psp -j2 all
 psp-objdump -d build/psp/objects/scalar.o > build/scalar-disassembly.txt
 psp-objdump -d --disassemble=falcon_dot_q4_vfpu build/psp/objects/llmpsp_vfpu.o > build/vfpu-disassembly.txt

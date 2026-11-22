@@ -8,19 +8,18 @@ import re
 import shutil
 import statistics
 import subprocess
-import sys
 
 from PIL import Image
+
+from iso_layout import verify_iso_layout
 
 ROOT = Path(__file__).resolve().parents[1]
 BUILD = ROOT / "build"
 VERIFY = BUILD / "verify"
-EMULATOR = ROOT.parent / "LLMPSP/qwen/q4_0/.work/ppsspp-build/PPSSPPHeadless"
-CASES = json.loads((ROOT / "cases.json").read_text())
+EMULATOR = ROOT / ".work/ppsspp-build/PPSSPPHeadless"
+CASES = json.loads((ROOT / "tests/cases.json").read_text())
 KERNELS = ["C / SCALAR", "LLMPSP / VFPU", "VH2F / VFPU", "CUSTOM / VMMUL", "VH2F / VMMUL"]
 IMPLEMENTATION_ID = "five-kernels-1"
-sys.path.insert(0, str(ROOT / "tests"))
-from iso_layout import verify_iso_layout
 
 
 def run_logged(command, path, env):
@@ -82,7 +81,7 @@ def validate_csv(rows, cases, mode, clocks, samples, target_repetitions=None):
     expected = {(case["name"], kernel) for case in cases for kernel in KERNELS}
     geometry = {case["name"]: case for case in cases}
     groups = {}
-    manifest = json.loads((ROOT / "assets/generated/MANIFEST.json").read_text())
+    manifest = json.loads((BUILD / "assets/MANIFEST.json").read_text())
     for row in rows:
         groups.setdefault((row["case"], row["kernel"]), []).append(row)
         if row["dataset_crc32"] != manifest["dataset_crc32"] or row["mode"] != mode:
@@ -137,7 +136,7 @@ def main():
     run_logged(["gcc", "-O3", "-std=c99", "-Wall", "-Wextra", "-Werror",
                 "-Iinclude", "tests/host.c", "src/engine.c", "src/scalar.c", "src/custom_vfpu.c",
                 "-lm", "-lz", "-o", BUILD / "host-check"], VERIFY / "host-build.log", env)
-    output = run_logged([BUILD / "host-check", ROOT / "assets/generated/BENCH.DAT"],
+    output = run_logged([BUILD / "host-check", BUILD / "assets/BENCH.DAT"],
                         VERIFY / "host.log", env)
     expected_outputs = sum(case["rows"] * case["batch"] for case in CASES)
     if f"[host-pass] cases={len(CASES)} outputs={expected_outputs} custom=0" not in output:
@@ -158,7 +157,7 @@ def main():
     report = {"psp_model": "PSP-1000", "validation_environment": "PPSSPP; timing is emulated",
               "physical_psp_tested": False, "host_outputs": expected_outputs,
               "interface": "matrix_q4", "custom_vmmul": True,
-              "dataset_bytes": json.loads((ROOT / "assets/generated/MANIFEST.json").read_text())["dataset_bytes"],
+              "dataset_bytes": json.loads((BUILD / "assets/MANIFEST.json").read_text())["dataset_bytes"],
               "free_user_kib": int(re.search(r"free_user_kib=(\d+)", output).group(1)),
               "suite": validate_csv(suite_files[0][1], cases, "TIME", {333}, 1),
               "suite_csv": str(suite_files[0][0].relative_to(ROOT))}

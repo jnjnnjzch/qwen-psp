@@ -1,11 +1,10 @@
 PROJECT := $(dir $(abspath $(lastword $(MAKEFILE_LIST))))
-UPSTREAM := $(abspath $(PROJECT)/../LLMPSP)
 .DEFAULT_GOAL := all
 
 TARGET = DotQ4Bench
 OBJS = objects/main_psp.o objects/engine.o objects/scalar.o objects/custom_vfpu.o \
        objects/custom_vh2f.o objects/dot_vh2f.o objects/llmpsp_vfpu.o
-INCDIR = $(PROJECT)/include $(UPSTREAM)/include
+INCDIR = $(PROJECT)include
 CFLAGS = -O3 -G0 -Wall -Wextra -Werror -std=c99 -fno-math-errno -fno-lto -MMD -MP
 ASFLAGS = $(CFLAGS)
 LIBS = -lpsppower -lpsprtc -lz -lm
@@ -14,7 +13,7 @@ PSP_FW_VERSION = 550
 PSP_LARGE_MEMORY = 0
 EXTRA_TARGETS = EBOOT.PBP
 PSP_EBOOT_TITLE = DOT Q4 / PSP Compute Lab
-PSP_EBOOT_ICON = $(PROJECT)/assets/generated/ICON0.PNG
+PSP_EBOOT_ICON = $(PROJECT)build/assets/ICON0.PNG
 SFOFLAGS = -s PSP_SYSTEM_VER=5.50
 LDFLAGS = -Wl,-Map,DotQ4Bench.map
 
@@ -30,10 +29,6 @@ objects/custom_vh2f.o: $(PROJECT)/src/custom_vfpu.c $(PROJECT)/Makefile.psp
 	$(CC) $(CFLAGS) -fstack-usage -DBENCH_CUSTOM_VH2F=1 $(addprefix -I,$(INCDIR)) -c $< -o $@
 
 PARAM.SFO: $(PROJECT)/Makefile.psp
-
-objects/llmpsp_vfpu.o: $(UPSTREAM)/src/falcon_q4_psp.c $(PROJECT)/Makefile.psp
-	mkdir -p $(dir $@)
-	$(CC) $(filter-out -Werror,$(CFLAGS)) $(addprefix -I,$(INCDIR)) -c $< -o $@
 
 PSPSDK := $(shell psp-config --pspsdk-path)
 include $(PSPSDK)/lib/build.mak

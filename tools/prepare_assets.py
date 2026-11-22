@@ -3,7 +3,6 @@ import hashlib
 import json
 from pathlib import Path
 import struct
-import sys
 import zlib
 
 from gguf import GGUFReader, GGMLQuantizationType
@@ -12,11 +11,9 @@ import numpy as np
 from PIL import Image, ImageDraw, ImageFont
 from tokenizers import Tokenizer
 
+from convert_model import q4_0_bytes
+
 ROOT = Path(__file__).resolve().parents[1]
-UPSTREAM = ROOT.parent / "LLMPSP"
-QWEN = UPSTREAM / "qwen/q4_0"
-sys.path.insert(0, str(UPSTREAM / "tools"))
-from convert_falcon_h1 import q4_0_bytes
 PROMPT = (
     "<|im_start|>user\nExplain how a small language model performs matrix multiplication "
     "on a portable game console, using clear examples and practical measurements."
@@ -88,20 +85,20 @@ def make_icon(destination):
 
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument("--output", type=Path, default=ROOT / "assets/generated")
+    parser.add_argument("--output", type=Path, default=ROOT / "build/assets")
     args = parser.parse_args()
     args.output.mkdir(parents=True, exist_ok=True)
-    source_manifest = json.loads((UPSTREAM / "qwen/download-manifest-q4_0.json").read_text())
-    gguf_path = UPSTREAM / "qwen" / source_manifest["model_file"]
-    model_path = QWEN / "model.fhq4"
-    metadata = json.loads((QWEN / "model.fhq4.json").read_text())
+    source_manifest = json.loads((ROOT / "tools/model_source.json").read_text())
+    gguf_path = ROOT / source_manifest["model_file"]
+    model_path = ROOT / "model.fhq4"
+    metadata = json.loads((ROOT / "model.fhq4.json").read_text())
     if sha256(gguf_path) != source_manifest["sha256"] or sha256(model_path) != metadata["sha256"]:
         raise ValueError("模型 SHA-256 与来源记录不同")
     reader = GGUFReader(gguf_path)
     gguf_tensors = {tensor.name: tensor for tensor in reader.tensors}
     if reader.fields["general.architecture"].contents() != "qwen3":
         raise ValueError("需要 Qwen3 模型")
-    tokenizer = Tokenizer.from_file(str(QWEN / ".work/tokenizer.json"))
+    tokenizer = Tokenizer.from_file(str(ROOT / ".work/tokenizer.json"))
     tokens = tokenizer.encode(PROMPT, add_special_tokens=False).ids[:16]
     if len(tokens) != 16:
         raise ValueError("真实文本需要至少 16 个 token")
@@ -151,7 +148,7 @@ def main():
         if subnormals.any() or not np.isfinite(scales).all():
             raise ValueError("选中权重的 scale 超出原始 VFPU 算子的精确转换范围")
     inputs = first_layer_inputs(read_tensor, tokens)
-    cases = json.loads((ROOT / "cases.json").read_text())
+    cases = json.loads((ROOT / "tests/cases.json").read_text())
     case_record = struct.Struct("<32s9I")
     if not 1 <= len(cases) <= 32:
         raise ValueError("测试数量必须在 1 到 32 之间")
@@ -204,7 +201,7 @@ def main():
         "reference": "GGUF dequantize Q4_0; FP64 matrix product rounded once to FP32",
         "tolerance": "abs(error) <= 2e-5 + 2e-5 * sum(abs(x_i * w_i))",
         "cases": cases,
-        "upstream_kernel_sha256": sha256(UPSTREAM / "src/falcon_q4_psp.c"),
+        "upstream_kernel_sha256": sha256(ROOT / "src/llmpsp_vfpu.c"),
     }
     (args.output / "MANIFEST.json").write_text(json.dumps(manifest, ensure_ascii=False, indent=2) + "\n")
     make_icon(args.output / "ICON0.PNG")

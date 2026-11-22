@@ -3,13 +3,14 @@ import json
 from pathlib import Path
 import re
 import shutil
-import sys
 
 import pycdlib
 
+from iso_layout import verify_iso_layout
+
 ROOT = Path(__file__).resolve().parents[1]
 BUILD = ROOT / "build"
-UPSTREAM = ROOT.parent / "LLMPSP"
+ASSETS = BUILD / "assets"
 IMPLEMENTATION_ID = "five-kernels-1"
 KERNELS = [
     {"name": "C / SCALAR", "scale_conversion": "C half_to_float", "disassembly": "scalar-disassembly.txt"},
@@ -22,8 +23,6 @@ KERNELS = [
     {"name": "VH2F / VMMUL", "scale_conversion": "lhu + packing + mtv + vh2f.p",
      "disassembly": "custom-vh2f-disassembly.txt"},
 ]
-sys.path.insert(0, str(ROOT / "tests"))
-from iso_layout import verify_iso_layout
 
 
 def instructions(filename):
@@ -61,10 +60,10 @@ def main():
     shutil.copyfile(BUILD / "psp/EBOOT.PBP", game / "EBOOT.PBP")
     for destination in (game, usrdir):
         for filename in ("BENCH.DAT", "MANIFEST.json"):
-            shutil.copyfile(ROOT / "assets/generated" / filename, destination / filename)
-        shutil.copyfile(UPSTREAM / "LICENSE", destination / "LLMPSP_LICENSE.txt")
-        shutil.copyfile(UPSTREAM / "qwen/q4_0/MODEL-LICENSE.txt", destination / "MODEL_LICENSE.txt")
-    shutil.copyfile(ROOT / "assets/generated/ICON0.PNG", iso_root / "PSP_GAME/ICON0.PNG")
+            shutil.copyfile(ASSETS / filename, destination / filename)
+        shutil.copyfile(ROOT / "LICENSE", destination / "LLMPSP_LICENSE.txt")
+        shutil.copyfile(ROOT / "MODEL-LICENSE.txt", destination / "MODEL_LICENSE.txt")
+    shutil.copyfile(ASSETS / "ICON0.PNG", iso_root / "PSP_GAME/ICON0.PNG")
     for name in ("EBOOT.BIN", "BOOT.BIN"):
         shutil.copyfile(BUILD / "psp/DotQ4Bench.prx", iso_root / "PSP_GAME/SYSDIR" / name)
     (iso_root / "UMD_DATA.BIN").write_bytes(b"DQTB-00001|0000000000000000|0001|G\x00")
@@ -84,7 +83,7 @@ def main():
     # 使用 ISO 库重新读取最终镜像，确认程序和计算数据的字节。
     image.open(str(iso_path))
     for target, source in (("/PSP_GAME/SYSDIR/EBOOT.BIN", BUILD / "psp/DotQ4Bench.prx"),
-                           ("/PSP_GAME/USRDIR/BENCH.DAT", ROOT / "assets/generated/BENCH.DAT")):
+                           ("/PSP_GAME/USRDIR/BENCH.DAT", ASSETS / "BENCH.DAT")):
         with image.open_file_from_iso(iso_path=target) as file:
             if file.read() != source.read_bytes():
                 raise ValueError(f"ISO 内容不同: {target}")

@@ -1,0 +1,7 @@
+--- a/src/pcre2_compile.c
++++ b/src/pcre2_compile.c
+@@ -1355,2 +1355,2 @@
+-int32_t min = 0;
+-int32_t max = REPEAT_UNLIMITED; /* This value is larger than MAX_REPEAT_COUNT */
++int min = 0;
++int max = REPEAT_UNLIMITED; /* This value is larger than MAX_REPEAT_COUNT */

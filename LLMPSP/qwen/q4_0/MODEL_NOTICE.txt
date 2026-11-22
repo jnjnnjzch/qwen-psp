@@ -1,0 +1,10 @@
+模型：Qwen/Qwen3-0.6B，Apache License 2.0。
+量化来源：unsloth/Qwen3-0.6B-GGUF。
+固定版本：50968a4468ef4233ed78cd7c3de230dd1d61a56b。
+原始文件：Qwen3-0.6B-Q4_0.gguf。
+原始 SHA-256：33bcc57074ec7b6eada5a90651ee546ec0c2b271002c22baf9f1b2dd1e8f75cb。
+
+本目录的 convert.py 将模型写为 FHQ4 v2：保留已有 Q4_0 矩阵的字节，
+将 Q6_K 词嵌入和三个 Q4_1 矩阵转换为 Q4_0，归一化权重使用 FP32。
+模型来源记录见 qwen/download-manifest-q4_0.json；转换结果见 model.fhq4.json。
+完整模型许可证见 MODEL-LICENSE.txt。
